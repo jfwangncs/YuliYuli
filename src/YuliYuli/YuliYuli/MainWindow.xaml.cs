@@ -22,15 +22,16 @@ namespace YuliYuli
             FilePath.Text = Environment.CurrentDirectory;
             ProcessBar.Value = 0;
             ProcessValue.Text = "";
-            Percent.Text = "";
             Result.Text = "";
+
+
             FilePath.MouseDoubleClick += FilePath_MouseDoubleClick;
             //下载
             DownFile.Click += DownFile_Click;
 
         }
 
-        private async void  DownFile_Click(object sender, RoutedEventArgs e)
+        private async void DownFile_Click(object sender, RoutedEventArgs e)
         {
             string aid = Aid.Text.Trim();
             if (string.IsNullOrEmpty(aid))
@@ -39,7 +40,7 @@ namespace YuliYuli
                 return;
             }
 
-            var video =await GetVideoInfo(aid);
+            var video = await GetVideoInfo(aid);
 
             if (string.IsNullOrEmpty(video.Title))
             {
@@ -61,7 +62,27 @@ namespace YuliYuli
 
         private async Task<VideoInfo> GetVideoInfo(string aid)
         {
+            var jfYu1 = new jfYuHttpClient("http://upos-sz-mirrorhw.bilivideo.com/upgcxcode/77/89/204618977/204618977-1-208.mp4?e=ig8euxZM2rNcNbhVhbdVhwdlhzdghwdVhoNvNC8BqJIzNbfq9rVEuxTEnE8L5F6VnEsSTx0vkX8fqJeYTj_lta53NCM=&uipk=5&nbs=1&deadline=1596125090&gen=playurl&os=hwbv&oi=837317101&trid=d444453003794334805e88f14b24c9cbT&platform=html5&upsig=599fab10853000f0a2c6e314276ef9c7&uparams=e,uipk,nbs,deadline,gen,os,oi,trid,platform&mid=580104086&orderid=0,1&logo=80000000");
+
+
+            await jfYu1.GetFileAsync("d:/1.mp4", (q, e, t) =>
+            {
+                var pro = double.Parse(q.ToString("0.00"));
+                var left = pro / 100 * this.Width;
+                if (left < 10)
+                    left = 10;
+                if (left > this.Width - 120)
+                    left = this.Width - 120;
+                Thickness margin = new Thickness(left, 63, 10, 0);
+                ProcessPanel.Margin = margin;
+                ProcessBar.Value = pro;
+                ProcessValue.Text = pro.ToString() + "%," + e.ToString("0.0") + "KB/s";
+            });
+           
+
             var video = new VideoInfo();
+            return video;
+
             try
             {
                 var jfYu = new jfYuRequest(aid.Contains("bilibili.com") ? aid : $"https://www.bilibili.com/video/{aid}/")
@@ -87,7 +108,7 @@ namespace YuliYuli
             catch (Exception ex)
             {
 
-            }            
+            }
 
             return video;
         }
