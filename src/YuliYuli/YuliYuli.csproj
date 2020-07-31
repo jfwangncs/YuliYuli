@@ -9,10 +9,8 @@
 
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.11.24" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\jfYu\src\jfYu.Core\jfYu.Core.jfYuRequest\jfYu.Core.jfYuRequest.csproj" />
+    <PackageReference Include="jfYu.Core.Common" Version="1.1.4" />
+    <PackageReference Include="jfYu.Core.JfyuRequest" Version="1.1.8" />
   </ItemGroup>
 
 </Project>
