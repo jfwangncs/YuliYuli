@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:YuliYuli"
+        xmlns:local="clr-namespace:YuliYuli" xmlns:sync="http://schemas.syncfusion.com/wpf"
         mc:Ignorable="d"
         Title="YuliYuli视频下载" Height="450" Width="600">
     <Grid>
@@ -12,21 +12,27 @@
             <ColumnDefinition Width="34*"/>
             <ColumnDefinition Width="151*"/>
         </Grid.ColumnDefinitions>
-        <Label Content="视频链接地址/视频号:" HorizontalAlignment="Center" Margin="0,2,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.157,0.426" Grid.ColumnSpan="2"/>
+        <Label Content="视频链接地址/视频号:" HorizontalAlignment="Left" Margin="12,2,0,0" VerticalAlignment="Top" Grid.ColumnSpan="2"/>
+        <Label Content="保存位置:" HorizontalAlignment="Left" Margin="12,26,0,0" VerticalAlignment="Top" Grid.ColumnSpan="2"/>        
         <Button Name="DownFile" Content="下载" HorizontalAlignment="Left" Margin="403,5,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <TextBox HorizontalAlignment="Left" Name="Aid" Margin="91,6,0,0"  Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="401" Grid.Column="1" Grid.ColumnSpan="2"/>
-
-        <Label Content="保存位置:" HorizontalAlignment="Left" Margin="12,30,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.931,-1.99" Grid.ColumnSpan="2"/>
-        <TextBox HorizontalAlignment="Left" Name="FilePath" Margin="28,34,0,0" Text="" IsReadOnly="True" TextWrapping="Wrap" VerticalAlignment="Top" Width="464" Grid.Column="1" Grid.ColumnSpan="2"/>
-        <ProgressBar Name="ProcessBar" HorizontalAlignment="Left" Height="10" Margin="10,65,0,0" Value="0"  VerticalAlignment="Top" Width="570" Grid.ColumnSpan="3"/>
-        <StackPanel Orientation="Horizontal" Margin="10,63,10,0" Name="ProcessPanel" Grid.ColumnSpan="10">
+        <TextBox HorizontalAlignment="Left" Name="Aid" Margin="91,6,0,0"  Text="" TextWrapping="Wrap" VerticalAlignment="Top" Width="401" Grid.Column="1" Grid.ColumnSpan="2"/>        
+        <TextBox HorizontalAlignment="Left" Name="FilePath" Margin="28,31,0,0" Text="" IsReadOnly="True" TextWrapping="Wrap" VerticalAlignment="Top" Width="464" Grid.Column="1" Grid.ColumnSpan="2"/>
+        <ProgressBar Name="ProcessBar" HorizontalAlignment="Left" Height="10" Margin="12,75,0,0" Value="0"  VerticalAlignment="Top" Width="560" Grid.ColumnSpan="3"/>
+        <StackPanel Orientation="Horizontal" Margin="12,72,10,1" Name="ProcessPanel" Grid.ColumnSpan="3">
             <TextBlock Name="ProcessValue" Text="0" />
         </StackPanel>
 
-        <Border Margin="10,80,0,20" Grid.ColumnSpan="3" CornerRadius="5" BorderBrush="Gray" BorderThickness="1">
-            <TextBlock Name="Result" TextWrapping="Wrap" Height="340" Width="580" Margin="0,0,0,0">
+        <Border Margin="0,90,0,10" Grid.ColumnSpan="3" CornerRadius="5" BorderBrush="Gray" BorderThickness="1" Width="570">
+            <TextBlock Name="Result" TextWrapping="Wrap" Height="330" Width="570" Margin="0,0,0,0">
             </TextBlock>
         </Border>
+        <Label   HorizontalAlignment="Left" Margin="12,51,0,0" VerticalAlignment="Top" Grid.ColumnSpan="2" Width="80">
+            <CheckBox Content="分P下载："/>
+        </Label>
+
+        <TextBox   Margin="50,53,0,10" HorizontalAlignment="Left" Grid.Column="1" Grid.ColumnSpan="2" Width="38" VerticalAlignment="Top"/>
+        <Label Margin="90,49,0,10" HorizontalAlignment="Left" Grid.Column="1" Grid.ColumnSpan="2"  VerticalAlignment="Top" Content="到"></Label>
+        <TextBox   Margin="120,53,0,10" HorizontalAlignment="Left" Grid.Column="1" Grid.ColumnSpan="2" Width="38" VerticalAlignment="Top"/>
 
     </Grid>
 </Window>

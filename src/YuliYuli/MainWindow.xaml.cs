@@ -31,6 +31,7 @@ namespace YuliYuli
             FilePath.Text = Environment.CurrentDirectory;
             ProcessBar.Value = 0;
             ProcessValue.Text = "";
+            this.ResizeMode = ResizeMode.CanMinimize;
             //选择保存地址
             FilePath.MouseDoubleClick += FilePath_MouseDoubleClick;
             //下载
@@ -46,7 +47,7 @@ namespace YuliYuli
             string aid = Aid.Text.Trim();
             if (string.IsNullOrEmpty(aid))
             {
-                System.Windows.Forms.MessageBox.Show("请输入视频号或者视频链接");
+                System.Windows.Forms.MessageBox.Show("请输入视频号,例如：BV1fD4y1m7TD");
                 return;
             }
             //获取视频信息
@@ -56,25 +57,27 @@ namespace YuliYuli
                 System.Windows.Forms.MessageBox.Show("视频不存在请检查视频号或者链接是否正确");
                 return;
             }
-            var run = new Run($"{video.Title}下载中...\r\n");
-            run.Foreground = Brushes.Green;
+            var run = new Run($"{video.Title}下载中...\r\n")
+            {
+                Foreground = Brushes.Green
+            };
             Result.Inlines.Add(run);
             //下载视频
             await DownLoadVideo(aid, video);
 
-            run = new Run($"{video.Title}全部下载完成.\r\n");
-            run.Foreground = Brushes.Green;
+            run = new Run($"{video.Title}全部下载完成.\r\n")
+            {
+                Foreground = Brushes.Green
+            };
             Result.Inlines.Add(run);
         }
 
         private void FilePath_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            using (var dialog = new FolderBrowserDialog())
+            using var dialog = new FolderBrowserDialog();
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                {
-                    FilePath.Text = dialog.SelectedPath;
-                }
+                FilePath.Text = dialog.SelectedPath;
             }
         }
 
@@ -153,15 +156,19 @@ namespace YuliYuli
                         ProcessPanel.Margin = margin;
                         ProcessBar.Value = 0;
                         ProcessValue.Text = "";
-                        var run = new Run($"{fileName}下载完成\r\n");
-                        run.Foreground = Brushes.Green;
+                        var run = new Run($"{fileName}下载完成\r\n")
+                        {
+                            Foreground = Brushes.Green
+                        };
                         Result.Inlines.Add(run);
                         break;
                     }
                     else
                     {
-                        var run = new Run($"{fileName}下载失败，重试第{j + 1}次\r\n");
-                        run.Foreground = Brushes.Red;
+                        var run = new Run($"{fileName}下载失败，重试第{j + 1}次\r\n")
+                        {
+                            Foreground = Brushes.Red
+                        };
                         Result.Inlines.Add(run);
                     }
                 }
@@ -171,9 +178,11 @@ namespace YuliYuli
         private async Task<jfYuRequest> DownLoadFile(string burl)
         {
 
-            var xbeibei = new jfYuRequest("https://www.xbeibeix.com/api/bilibili/");
-            xbeibei.Encoding = Encoding.UTF8;
-            xbeibei.Timeout = 30000;
+            var xbeibei = new jfYuRequest("https://www.xbeibeix.com/api/bilibili/")
+            {
+                Encoding = Encoding.UTF8,
+                Timeout = 30000
+            };
             xbeibei.RequestHeader.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9";
             xbeibei.RequestHeader.AcceptEncoding = "gzip, deflate, br";
             xbeibei.RequestHeader.AcceptLanguage = "zh-CN,zh;q=0.9,en;q=0.8";
@@ -186,13 +195,15 @@ namespace YuliYuli
 
             var burlname = xbeibeidoc.DocumentNode.SelectSingleNode("//input[contains(@placeholder, '输入BiliBili视频链接地址')]").Attributes["name"].Value;
 
-            var jfYuRequest = new jfYuRequest("https://www.xbeibeix.com/api/bilibili/");
-            jfYuRequest.Encoding = Encoding.UTF8;
-            //jfYuRequest.CustomHeader.Add(":authority", "www.xbeibeix.com");
-            //jfYuRequest.CustomHeader.Add(":method", "POST");
-            //jfYuRequest.CustomHeader.Add(":path", "/api/bilibili/");
-            //jfYuRequest.CustomHeader.Add(":scheme", "https");
-            jfYuRequest.Timeout = 30000;
+            var jfYuRequest = new jfYuRequest("https://www.xbeibeix.com/api/bilibili/")
+            {
+                Encoding = Encoding.UTF8,
+                //jfYuRequest.CustomHeader.Add(":authority", "www.xbeibeix.com");
+                //jfYuRequest.CustomHeader.Add(":method", "POST");
+                //jfYuRequest.CustomHeader.Add(":path", "/api/bilibili/");
+                //jfYuRequest.CustomHeader.Add(":scheme", "https");
+                Timeout = 30000
+            };
             jfYuRequest.RequestHeader.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9";
             jfYuRequest.RequestHeader.AcceptEncoding = "gzip, deflate, br";
             jfYuRequest.RequestHeader.AcceptLanguage = "zh-CN,zh;q=0.9,en;q=0.8";
