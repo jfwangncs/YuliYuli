@@ -5,12 +5,14 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>bitbug_favicon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="10.0.0" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.24" />
     <PackageReference Include="jfYu.Core.Common" Version="1.1.4" />
-    <PackageReference Include="jfYu.Core.JfyuRequest" Version="1.1.8" />
+    <PackageReference Include="jfYu.Core.jfYuRequest" Version="1.1.9" />
   </ItemGroup>
 
 </Project>

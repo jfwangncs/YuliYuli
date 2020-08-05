@@ -15,6 +15,11 @@ namespace YuliYuli.Models
         public int cid { get; set; }
 
         /// <summary>
+        /// 大小
+        /// </summary>
+        public long size { get; set; }
+
+        /// <summary>
         /// 页码
         /// </summary>
         public int page { get; set; }

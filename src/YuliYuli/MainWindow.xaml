@@ -18,17 +18,34 @@
         <Button Name="ChangeSavePath" Content="浏览" HorizontalAlignment="Left" Margin="390,31,0,0" VerticalAlignment="Top" Grid.Column="2"/>
         <TextBox HorizontalAlignment="Left" Name="Aid" Margin="72,6,0,0"  Text=""  VerticalAlignment="Top" Width="401" Grid.Column="1" Grid.ColumnSpan="2"/>
         <TextBox HorizontalAlignment="Left" Name="FilePath" Margin="28,31,0,0" Text="" IsReadOnly="True"  VerticalAlignment="Top" Width="443" Grid.Column="1" Grid.ColumnSpan="2"/>
-        <Border Margin="0,90,0,10" Grid.ColumnSpan="3" CornerRadius="5" BorderBrush="Gray" BorderThickness="1" Width="570">
-            <TextBlock Name="Result" TextWrapping="Wrap" Height="330" Width="570" Margin="0,0,0,0">
-            </TextBlock>
-        </Border>
-        <Label   HorizontalAlignment="Left" Margin="12,56,0,0" VerticalAlignment="Top" Grid.ColumnSpan="2" Width="80">
-            <CheckBox Content="分P下载："/>
-        </Label>
 
-        <TextBox   Margin="50,58,0,10" HorizontalAlignment="Left" Grid.Column="1" Grid.ColumnSpan="2" Width="38" VerticalAlignment="Top"/>
-        <Label Margin="90,54,0,10" HorizontalAlignment="Left" Grid.Column="1" Grid.ColumnSpan="2"  VerticalAlignment="Top" Content="到"></Label>
-        <TextBox   Margin="120,58,0,10" HorizontalAlignment="Left" Grid.Column="1" Grid.ColumnSpan="2" Width="38" VerticalAlignment="Top"/>
+        <ListView  Name="VideoListView" Margin="0,60,0,10" Grid.ColumnSpan="3"  BorderBrush="Gray" BorderThickness="1" Width="570" Height="330">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="0">
+                            <StackPanel Orientation="Horizontal" Margin="20,2">
+                                <TextBlock Text="{Binding Title}"  FontSize="12" Height="20"></TextBlock>
+                            </StackPanel>
+                        </Border>
+                        <ListView Grid.Row="1" ItemsSource="{Binding Sections}" Margin="0,0,0,0">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn  Header="视频名称" Width="285" DisplayMemberBinding="{Binding part}" />
+                                    <GridViewColumn Header="大小" Width="80" DisplayMemberBinding="{Binding Size}"/>
+                                    <GridViewColumn Header="进度" Width="80" DisplayMemberBinding="{Binding Process}"/>
+                                    <GridViewColumn Header="速度" Width="80" DisplayMemberBinding="{Binding Speed}"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
 
     </Grid>
 </Window>

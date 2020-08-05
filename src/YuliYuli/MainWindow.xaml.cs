@@ -1,18 +1,16 @@
-﻿using jfYu.Core.Common.Utilities;
+﻿using AutoMapper;
+using jfYu.Core.Common.Utilities;
 using jfYu.Core.jfYuRequest;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
-using System.Linq;
-using System.Security.Policy;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Forms;
-using System.Windows.Input;
 using System.Windows.Media;
 using YuliYuli.Models;
 
@@ -23,9 +21,11 @@ namespace YuliYuli
     /// </summary>
     public partial class MainWindow : Window
     {
-
+        object lockObject = new object();
+        MapperConfiguration config = null;
         public MainWindow()
         {
+            config = new MapperConfiguration(cfg => cfg.CreateMap<VideoInfo, VideoListView>());
             InitializeComponent();
             this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             Aid.Text = "";
@@ -40,8 +40,6 @@ namespace YuliYuli
         }
         private void ChangeSavePath_Click(object sender, RoutedEventArgs e)
         {
-            if (!DownFile.IsEnabled)
-                return;
             using var dialog = new FolderBrowserDialog();
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
@@ -50,8 +48,6 @@ namespace YuliYuli
         }
         private async void DownFile_Click(object sender, RoutedEventArgs e)
         {
-            Result.Inlines.Clear();
-            DownFile.IsEnabled = false;
             string aid = Aid.Text.Trim();
             if (string.IsNullOrEmpty(aid))
             {
@@ -73,26 +69,14 @@ namespace YuliYuli
                 DownFile.IsEnabled = true;
                 return;
             }
+            var config = new MapperConfiguration(cfg => { cfg.CreateMap<VideoInfo, VideoListView>(); cfg.CreateMap<VideoPagedInfo, VideoView>(); });
 
-            Result.Inlines.Add(new Run($"{video.Title}开始下载...\r\n")
-            {
-                Foreground = Brushes.Green
-            });
+            var mapper = new Mapper(config);
+            var vlv = mapper.Map<VideoListView>(video);
+            VideoListView.ItemsSource = new List<VideoListView>() { vlv };
             //下载视频
-            try
-            {
-                await DownLoadVideo(aid, video);
-            }
-            catch (Exception)
-            {
-                System.Windows.Forms.MessageBox.Show("下载视频出错请重试。");
-            }
+            //await DownLoadVideo(aid, video);
 
-            Result.Inlines.Add(new Run($"{video.Title}全部下载完成.\r\n")
-            {
-                Foreground = Brushes.Green
-            });
-            DownFile.IsEnabled = true;
         }
         private async Task<VideoInfo> GetVideoInfo(string bvid)
         {
@@ -136,7 +120,7 @@ namespace YuliYuli
             var SavePath = FilePath.Text + "\\" + video.Title + "\\";
             if (!Directory.Exists(SavePath))
                 Directory.CreateDirectory(SavePath);
-            Dictionary<string, Run> runs = new Dictionary<string, Run>();
+
             foreach (var item in video.Sections)
             {
                 var fileName = $"P{item.page}{item.part}";
@@ -151,29 +135,39 @@ namespace YuliYuli
                     var urlReqhtml = await urlReq.GetHtmlAsync();
                     var urlReqData = Serializer.Deserialize<dynamic>(urlReqhtml);
                     string url = urlReqData.data.durl[0].url;
+                    item.size = urlReqData.data.durl[0].size;
                     var dfreq = new jfYuRequest(url);
                     dfreq.RequestHeader.Referer = $"https://www.bilibili.com/video/{video.BVID}";
-                    runs.Add($"run{item.cid}", new Run($"{fileName},进度:0%,速度:0KB/s,剩余时间:00:00:00\r\n"));
-                    Result.Inlines.Add(runs[$"run{item.cid}"]);
-                    var flag = await dfreq.GetFileAsync($"{SavePath}\\{fileName}.flv", (q, e, t) =>
+                    try
                     {
-                        var pro = double.Parse(q.ToString("0.00"));
-                        var speed = e > 1024 ? $"{e / 1024:0.00}MB/s" : $"{e:0.00}KB/s";
-                        TimeSpan time = TimeSpan.FromSeconds((double)t);
-                        runs[$"run{item.cid}"].Text = $"{fileName},进度:{pro}%,速度:{speed},剩余时间:{time.ToString(@"hh\:mm\:ss")}\r\n";
-                    });
-                    if (flag)
-                    {
-                        runs[$"run{item.cid}"].Text = $"{fileName}下载完成\r\n";
-                        break;
+                        var flag = await dfreq.GetFileAsync($"{SavePath}\\{fileName}.flv", (q, e, t) =>
+                       {
+                           Dispatcher.Invoke(() =>
+                           {
+                               lock (lockObject)
+                               {
+
+                                   var pro = double.Parse(q.ToString("0.00"));
+                                   var speed = e > 1024 ? $"{e / 1024:0.00}MB/s" : $"{e:0.00}KB/s";
+                                   TimeSpan time = TimeSpan.FromSeconds((double)t);
+                               };
+                           });
+                       });
+                        if (flag)
+                        {
+                            break;
+                        }
+                        else
+                        {
+
+                        }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        runs[$"run{item.cid}"].Text = $"{fileName}下载失败，重试第{j + 1}次\r\n";
+
                     }
                 }
             }
         }
     }
-
 }

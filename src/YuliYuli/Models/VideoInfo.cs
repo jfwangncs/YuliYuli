@@ -23,7 +23,8 @@ namespace YuliYuli.Models
         /// 作者编号
         /// </summary>
         public string Mid { get; set; }
-        
+      
+
         /// <summary>
         /// 作者名
         /// </summary>
