@@ -2,9 +2,11 @@
 using jfYu.Core.Common.Utilities;
 using jfYu.Core.jfYuRequest;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -22,21 +24,24 @@ namespace YuliYuli
     public partial class MainWindow : Window
     {
         object lockObject = new object();
-        MapperConfiguration config = null;
+        public List<VideoInfo> DownList = new List<VideoInfo>();
+        private ConcurrentQueue<string> Queue = new ConcurrentQueue<string>();
         public MainWindow()
         {
-            config = new MapperConfiguration(cfg => cfg.CreateMap<VideoInfo, VideoListView>());
             InitializeComponent();
             this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             Aid.Text = "";
             FilePath.Text = Environment.CurrentDirectory;
             this.ResizeMode = ResizeMode.CanMinimize;
+            VideoListView.ItemsSource = DownList;
             //选择保存地址
             ChangeSavePath.Click += ChangeSavePath_Click;
-
             //下载
             DownFile.Click += DownFile_Click;
 
+            Task.Run(async () => await DownLoadVideo());
+            Task.Run(async () => await DownLoadVideo());
+            Task.Run(async () => await DownLoadVideo());
         }
         private void ChangeSavePath_Click(object sender, RoutedEventArgs e)
         {
@@ -69,14 +74,13 @@ namespace YuliYuli
                 DownFile.IsEnabled = true;
                 return;
             }
-            var config = new MapperConfiguration(cfg => { cfg.CreateMap<VideoInfo, VideoListView>(); cfg.CreateMap<VideoPagedInfo, VideoView>(); });
-
-            var mapper = new Mapper(config);
-            var vlv = mapper.Map<VideoListView>(video);
-            VideoListView.ItemsSource = new List<VideoListView>() { vlv };
-            //下载视频
-            //await DownLoadVideo(aid, video);
-
+            video.SavePath = FilePath.Text;
+            if (!DownList.Any(q => q.Title.Equals(video.Title) && q.AID.Equals(video.AID) && q.BVID.Equals(video.BVID)))
+            {
+                Queue.Enqueue(video.AID);
+                DownList.Add(video);
+                VideoListView.Items.Refresh();
+            }
         }
         private async Task<VideoInfo> GetVideoInfo(string bvid)
         {
@@ -114,60 +118,75 @@ namespace YuliYuli
             }
             return video;
         }
-        private async Task DownLoadVideo(string aid, VideoInfo video)
+        private async Task DownLoadVideo()
         {
-
-            var SavePath = FilePath.Text + "\\" + video.Title + "\\";
-            if (!Directory.Exists(SavePath))
-                Directory.CreateDirectory(SavePath);
-
-            foreach (var item in video.Sections)
+            do
             {
-                var fileName = $"P{item.page}{item.part}";
-                //三次重试
-                for (int j = 0; j < 4; j++)
+                string Aid = "";
+                if ((Queue.TryDequeue(out Aid)))
                 {
-                    var urlReq = new jfYuRequest($"https://api.bilibili.com/x/player/playurl?avid={video.AID}&cid={item.cid}&ptype=json&qn=112")
+                    var video = DownList.FirstOrDefault(q => q.AID.Equals(Aid));
+                    if (video != null)
                     {
-                        Encoding = Encoding.UTF8,
-                        Timeout = 30000
-                    };
-                    var urlReqhtml = await urlReq.GetHtmlAsync();
-                    var urlReqData = Serializer.Deserialize<dynamic>(urlReqhtml);
-                    string url = urlReqData.data.durl[0].url;
-                    item.size = urlReqData.data.durl[0].size;
-                    var dfreq = new jfYuRequest(url);
-                    dfreq.RequestHeader.Referer = $"https://www.bilibili.com/video/{video.BVID}";
-                    try
-                    {
-                        var flag = await dfreq.GetFileAsync($"{SavePath}\\{fileName}.flv", (q, e, t) =>
-                       {
-                           Dispatcher.Invoke(() =>
-                           {
-                               lock (lockObject)
-                               {
+                        var SavePath = video.SavePath + "\\" + video.Title + "\\";
+                        if (!Directory.Exists(SavePath))
+                            Directory.CreateDirectory(SavePath);
 
-                                   var pro = double.Parse(q.ToString("0.00"));
-                                   var speed = e > 1024 ? $"{e / 1024:0.00}MB/s" : $"{e:0.00}KB/s";
-                                   TimeSpan time = TimeSpan.FromSeconds((double)t);
-                               };
-                           });
-                       });
-                        if (flag)
+                        foreach (var item in video.Sections)
                         {
-                            break;
-                        }
-                        else
-                        {
+                            var fileName = $"P{item.page}{item.part}";
+                            //三次重试
+                            for (int j = 0; j < 4; j++)
+                            {
+                                var urlReq = new jfYuRequest($"https://api.bilibili.com/x/player/playurl?avid={video.AID}&cid={item.cid}&ptype=json&qn=112")
+                                {
+                                    Encoding = Encoding.UTF8,
+                                    Timeout = 30000
+                                };
+                                var urlReqhtml = await urlReq.GetHtmlAsync();
+                                var urlReqData = Serializer.Deserialize<dynamic>(urlReqhtml);
+                                string url = urlReqData.data.durl[0].url;
+                                item.size = urlReqData.data.durl[0].size;
+                                item.Size = ((decimal)item.size / 1024 / 1024).ToString("0.00") + "MB";
+                                var dfreq = new jfYuRequest(url);
+                                dfreq.RequestHeader.Referer = $"https://www.bilibili.com/video/{video.BVID}";
+                                try
+                                {
+                                    var flag = await dfreq.GetFileAsync($"{SavePath}\\{fileName}.flv", (q, e, t) =>
+                                   {
+                                       Dispatcher.Invoke(() =>
+                                       {
+                                           lock (lockObject)
+                                           {
+                                               var pro = double.Parse(q.ToString("0.00"));
+                                               item.Process = pro + "%";
+                                               var speed = e > 1024 ? $"{e / 1024:0.00}MB/s" : $"{e:0.00}KB/s";
+                                               item.Speed = speed;
+                                               //TimeSpan time = TimeSpan.FromSeconds((double)t);
+                                               VideoListView.Items.Refresh();
+                                           };
+                                       });
+                                   });
+                                    if (flag)
+                                    {
+                                        break;
+                                    }
+                                    else
+                                    {
 
-                        }
-                    }
-                    catch (Exception ex)
-                    {
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
 
+                                }
+                            }
+                        }
                     }
                 }
-            }
+
+                await Task.Delay(500);
+            } while (true);
         }
     }
 }
