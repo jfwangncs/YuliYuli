@@ -6,4 +6,5 @@ bilibili视频下载，可自动下载视频。
 打开YuliYuli.exe
 输入视频号或者链接地址
 选择保存位置，点击下载即可
-![image](https://wx1.sbimg.cn/2020/08/11/oYgWA.png)
+
+[![oYgWA.png](https://wx1.sbimg.cn/2020/08/11/oYgWA.png)](https://sbimg.cn/image/oYgWA)
