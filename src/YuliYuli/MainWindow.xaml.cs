@@ -169,23 +169,39 @@ namespace YuliYuli
                                    });
                                     if (flag)
                                     {
+                                        item.IsDown = true;
                                         break;
                                     }
                                     else
-                                    {
-
-                                    }
+                                        item.IsDown = false;
                                 }
-                                catch (Exception ex)
+                                catch (Exception)
                                 {
-
+                                    if (j >= 4)
+                                    {
+                                        item.Process = "0%";
+                                        item.Speed = "0KB/s";
+                                        Dispatcher.Invoke(() =>
+                                        {
+                                            VideoListView.Items.Refresh();
+                                        });
+                                    }
                                 }
                             }
                         }
                     }
+                    if (video.Sections.All(q => q.IsDown))
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            DownList.Remove(video);
+                            VideoListView.Items.Refresh();
+                        });
+                    }
+
                 }
 
-                await Task.Delay(500);
+                await Task.Delay(1000);
             } while (true);
         }
     }
