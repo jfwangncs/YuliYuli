@@ -13,6 +13,15 @@ namespace YuliYuli.Models
         /// <summary>
         /// 视频ID
         /// </summary>
+        public string AID { get; set; }
+
+        /// <summary>
+        /// 视频ID
+        /// </summary>
+        public string BVID { get; set; }
+        /// <summary>
+        /// 视频ID
+        /// </summary>
         public int cid { get; set; }
 
         /// <summary>
