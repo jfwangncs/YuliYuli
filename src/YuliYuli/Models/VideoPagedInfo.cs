@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Text;
 
 namespace YuliYuli.Models
@@ -10,6 +11,16 @@ namespace YuliYuli.Models
     /// </summary>
     public class VideoPagedInfo : INotifyPropertyChanged
     {
+
+        /// <summary>
+        /// 存储位置
+        /// </summary>
+        public string SavePath { get; set; }
+
+        /// <summary>
+        /// 标题
+        /// </summary>
+        public string Title { get; set; }
         /// <summary>
         /// 视频ID
         /// </summary>
@@ -54,10 +65,24 @@ namespace YuliYuli.Models
         /// </summary>
         public string Speed { get; set; } = "0KB/s";
 
+        public Color color { get; set; } = Color.WhiteSmoke;
+
         /// <summary>
         /// 是否完成
         /// </summary>
-        public bool IsDown { get; set; } = false;
+        public string state { get; set; } = "正常";
+
+        /// <summary>
+        /// 作者编号
+        /// </summary>
+        public string Mid { get; set; }
+
+
+        /// <summary>
+        /// 作者名
+        /// </summary>
+        public string Name { get; set; }
+
 
         public event PropertyChangedEventHandler PropertyChanged;
         public void OnPropertyChanged(PropertyChangedEventArgs e)
